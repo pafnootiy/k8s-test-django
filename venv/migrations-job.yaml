@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrations-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: django-container
+          image: docker.io/library/django_app:latest
+          command: ["python", "manage.py", "migrate"]
+          env:
+          - name: DATABASE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: django-configmap
+                key: DATABASE_URL
+      restartPolicy: Never
+  backoffLimit: 2

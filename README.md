@@ -14,6 +14,7 @@ $ docker-compose up
 
 В новом терминале не выключая сайт запустите команды для настройки базы данных:
 
+
 ```shell-session
 $ docker-compose run web ./manage.py migrate  # создаём/обновляем таблицы в БД
 $ docker-compose run web ./manage.py createsuperuser

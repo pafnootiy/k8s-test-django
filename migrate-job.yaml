@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: django-migrations-job
+spec:
+  backoffLimit: 3
+  startingDeadlineSeconds: 10
+  template:
+    spec:
+      containers:
+        - name: django-migrations-container
+          image: docker.io/library/django_app:latest
+          imagePullPolicy: Never
+          command: ["python", "manage.py",  "migrate", "--no-input"]
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: django-configmap
+                  key: SECRET_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: django-configmap
+                  key: DATABASE_URL
+            - name: ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: django-configmap
+                  key: ALLOWED_HOSTS
+          resources:
+            limits:
+              cpu: "0.1"
+              memory: "256Mi"
+            requests:
+              cpu: "0.05"
+              memory: "128Mi"
+  completions: 1

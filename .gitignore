@@ -2,3 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+venv/
+.idea/
+.env
+.django-configmap.yaml

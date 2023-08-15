@@ -1,33 +1,40 @@
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: CronJob
 metadata:
-  name: session-cleanup-pod
+  name: auto-session-cleanup-container
 spec:
-  containers:
-    - name: session-cleanup-container
-      image: docker.io/library/django_app:latest
-      imagePullPolicy: Never
-      command: ["python", "manage.py", "clearsessions"]   
-      env:
-        - name: SECRET_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: django-configmap
-              key: SECRET_KEY
-        - name: DATABASE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: django-configmap
-              key: DATABASE_URL
-        - name: ALLOWED_HOSTS
-          valueFrom:
-            configMapKeyRef:
-              name: django-configmap
-              key: ALLOWED_HOSTS
-      resources:
-        limits:
-          cpu: "0.1"
-          memory: "256Mi"
-        requests:
-          cpu: "0.05"
-          memory: "128Mi"
+  schedule: "0 0 13 * 5"
+  startingDeadlineSeconds: 10
+  jobTemplate:
+    spec:
+    ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          containers:
+            - name: session-cleanup-container
+              image: docker.io/library/django_app:latest
+              imagePullPolicy: Never
+              command: ["python", "manage.py", "clearsessions"]
+              env:
+                - name: SECRET_KEY
+                  valueFrom:
+                    configMapKeyRef:
+                      name: django-configmap
+                      key: SECRET_KEY
+                - name: DATABASE_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: django-configmap
+                      key: DATABASE_URL
+                - name: ALLOWED_HOSTS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: django-configmap
+                      key: ALLOWED_HOSTS
+              resources:
+                limits:
+                  cpu: "0.1"
+                  memory: "256Mi"
+                requests:
+                  cpu: "0.05"
+                  memory: "128Mi"

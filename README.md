@@ -37,7 +37,6 @@ data:
 Примените манифест ConfigMap к Minikube кластеру:
 ```shell-session
 kubectl apply -f configmap.yaml
-
 ```
 
 Создайте файл с именем configmap.yaml для ConfigMap. Добавьте следующее содержимое:
@@ -96,7 +95,6 @@ spec:
 Примените манифест сервиса к Minikube кластеру:
 ```shell-session
 kubectl apply -f service.yaml
-
 ```
 
 Создайте файл манифеста для Ingress и назовите его ingress.yaml. Добавьте следующее содержимое:

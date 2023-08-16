@@ -32,7 +32,7 @@ metadata:
   name: ваш-configmap
 data:
   DJANGO_DEBUG: "false"
-  DJANGO_SECRET_KEY: "ваш_секретный_ключ"
+  DJANGO_SECRET_KEY: "your secret key"
 ```
 Примените манифест ConfigMap к Minikube кластеру:
 ```shell-session

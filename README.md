@@ -22,6 +22,120 @@ $ docker-compose run web ./manage.py createsuperuser
 
 Для тонкой настройки Docker Compose используйте переменные окружения. Их названия отличаются от тех, что задаёт docker-образа, сделано это чтобы избежать конфликта имён. Внутри docker-compose.yaml настраиваются сразу несколько образов, у каждого свои переменные окружения, и поэтому их названия могут случайно пересечься. Чтобы не было конфликтов к названиям переменных окружения добавлены префиксы по названию сервиса. Список доступных переменных можно найти внутри файла [`docker-compose.yml`](./docker-compose.yml).
 
+## Развертывание Django приложения в Minikube
+
+Запустите Minikube с помощью следующей команды:
+```shell-session
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ваш-configmap
+data:
+  DJANGO_DEBUG: "false"
+  DJANGO_SECRET_KEY: "ваш_секретный_ключ"
+```
+Примените манифест ConfigMap к Minikube кластеру:
+```shell-session
+kubectl apply -f configmap.yaml
+
+```
+
+Создайте файл с именем configmap.yaml для ConfigMap. Добавьте следующее содержимое:
+```shell-session
+minikube start
+```
+
+Создайте файл манифеста для развертывания вашего Django приложения. Создайте файл с именем deployment.yaml и добавьте следующее содержимое:
+
+```shell-session
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: your-django-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: your-django-app
+  template:
+    metadata:
+      labels:
+        app: your-django-app
+    spec:
+      containers:
+        - name: your-django-app-container 
+          image: your-django-app-image:latest
+          envFrom:
+            - configMapRef:
+                name: your-configmap
+          ports:
+            - containerPort: 8000
+```
+
+Примените манифест развертывания к Minikube кластеру:
+
+```shell-session
+kubectl apply -f deployment.yaml
+```
+Создайте файл манифеста для сервиса и назовите его service.yaml. Добавьте следующее содержимое:
+
+```shell-session
+apiVersion: v1
+kind: Service
+metadata:
+  name:  django-svc
+spec:
+  selector:
+    app: your-django-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+```
+
+Примените манифест сервиса к Minikube кластеру:
+```shell-session
+kubectl apply -f service.yaml
+
+```
+
+Создайте файл манифеста для Ingress и назовите его ingress.yaml. Добавьте следующее содержимое:
+```shell-session
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: you-django-app
+spec:
+  rules:
+    - host: your-host-ingress.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: django-svc
+                port:
+                  number: 8000
+```
+Примените манифест Ingress к Minikube кластеру:
+```shell-session
+kubectl apply -f ingress.yaml
+```
+Получите IP Minikube с помощью следующей команды:
+```shell-session
+minikube ip
+```
+Добавьте запись в файл /etc/hosts на вашей хостовой системе, чтобы ассоциировать IP Minikube с вашим выбранным хостом. 
+```shell-session
+<Minikube-IP> your-host-ingress.local
+```
+Теперь ваше Django приложение должно быть доступно по адресу http://you-host-ingress.local в вашем веб-браузере.
+
+
+
+
+
 ## Переменные окружения
 
 Образ с Django считывает настройки из переменных окружения:

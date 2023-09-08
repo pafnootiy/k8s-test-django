@@ -14,9 +14,8 @@ spec:
     spec:
       containers:
         - name: django-container
-          # image: docker.io/library/django_app:latest
-          image: pafnootiy/django_app
-          imagePullPolicy: IfNotPresent
+          image: pafnootiy/django_app:v1
+          imagePullPolicy: Always
           env:
             - name: SECRET_KEY
               valueFrom:

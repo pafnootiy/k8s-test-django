@@ -147,3 +147,44 @@ minikube ip
 `ALLOWED_HOSTS` -- настройка Django со списком разрешённых адресов. Если запрос прилетит на другой адрес, то сайт ответит ошибкой 400. Можно перечислить несколько адресов через запятую, например `127.0.0.1,192.168.0.1,site.test`. [Документация Django](https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts).
 
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
+
+## Серверная инфраструктура: edu-happy-goldberg
+
+#### Домен
+Выделен домен  edu-happy-goldberg.sirius-k8s.dvmn.org  . Запросы обрабатывает Yandex Application Load Balancer.
+
+[Ссылка на домен](https://edu-happy-goldberg.sirius-k8s.dvmn.org/admin/_)
+
+#### K8s Namespace
+В k8s создан отдельный namespace **edu-happy-goldberg** . К нему выдан полный доступ: можно создавать конфиги и секреты, запускать поды — делать всё, что потребуется для настройки и запуска веб-сервиса.
+
+В кластере Kubernetes вам также открыт доступ на чтение к чужим окружениям и веб-сервисам. Вы можете заглянуть в их манифесты ConfigMap, Deployment, Service и скопировать к себе всё, что считаете полезным. Вам закрыт доступ только к содержимому Secret.
+
+Установите себе [Lens](https://k8slens.dev/), чтобы быстро переключаться между проектами, читать их конфигурацию, копировать и тестировать внутри своего k8s namespace.
+
+[Кластер k8s](https://console.cloud.yandex.ru/folders/b1gtcctl0mkamhmvoq79/managed-kubernetes/cluster/cat528346gdueh53ts39/overview),   
+ [Как подключиться к k8s в Яндекс Облаке](https://i.imgur.com/5LTp3BR.png)   
+ [Lens Resource Map](https://github.com/nevalla/lens-resource-map-extension)
+ 
+#### PostgreSQL база данных
+
+В Yandex Managed Service for PostgreSQL создана база данных **edu-happy-goldberg**. Доступы лежат в секрете k8s **postgres**.
+
+Максимальное количество открытых соединений: 10
+
+Настроены автоматические бекапы.
+
+ 
+####  ALB-роутер
+В Yandex Application Load Balancer создан роутер edu-happy-goldberg. Он распределяет входящие сетевые запросы на разные NodePort кластера k8s.
+
+Настроен редирект HTTP → HTTPS.
+
+Схема роутинга:
+
+https://edu-happy-goldberg.sirius-k8s.dvmn.org/ → NodePort 30231
+ 
+####  Корзина edu-happy-goldberg
+Храним в корзине и статику, и медиа-файлы. Пользователю даём прямые ссылки для скачивания файлов из Object Storage, чтобы не усложнять схему дополнительным веб-сервером Nginx. Пример прямой ссылки: https://storage.yandexcloud.net/edu-happy-goldberg/test.txt.
+
+Токены и прочие настройки доступа к Object Storage API лежат в секрете k8s bucket. Настроен доступ через k8s Persistent Volume Claim bucket.

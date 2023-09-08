@@ -10,7 +10,7 @@ spec:
       containers:
         - name: django-migrations-container
           image: docker.io/library/django_app:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           command: ["python", "manage.py",  "migrate", "--no-input"]
           env:
             - name: SECRET_KEY

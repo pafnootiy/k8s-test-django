@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: django-container
-          image: pafnootiy/django_app:v1
+          image: pafnootiy/django_app 
           imagePullPolicy: Always
           env:
             - name: SECRET_KEY

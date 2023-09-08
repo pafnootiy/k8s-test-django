@@ -14,8 +14,9 @@ spec:
     spec:
       containers:
         - name: django-container
-          image: docker.io/library/django_app:latest
-          imagePullPolicy: Never
+          # image: docker.io/library/django_app:latest
+          image: pafnootiy/django_app
+          imagePullPolicy: IfNotPresent
           env:
             - name: SECRET_KEY
               valueFrom:
@@ -56,4 +57,5 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-
+      nodePort: 30231
+  type: NodePort

@@ -4,13 +4,13 @@ metadata:
   name: django-migrations-job
 spec:
   backoffLimit: 3
-  startingDeadlineSeconds: 10
+  # startingDeadlineSeconds: 10
   template:
     spec:
       containers:
         - name: django-migrations-container
           image: docker.io/library/django_app:latest
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           command: ["python", "manage.py",  "migrate", "--no-input"]
           env:
             - name: SECRET_KEY
